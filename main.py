@@ -5,7 +5,7 @@ from glob import glob
 
 import train
 from model import DCGAN
-from utils import pp, check_data_arr
+from utils import pp, get_data_arr
 
 import tensorflow as tf
 
@@ -46,8 +46,7 @@ def main(_):
 
         if FLAGS.is_train:
             if FLAGS.preload_data == True:
-                data_path = check_data_arr(FLAGS)
-                data = np.load(data_path)
+                data = get_data_arr(FLAGS)
             else:
                 data = glob(os.path.join('./data', FLAGS.dataset, '*.jpg'))
             train.train_wasserstein(sess, dcgan, data, FLAGS)

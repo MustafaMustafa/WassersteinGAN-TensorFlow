@@ -82,21 +82,23 @@ def get_batch_images(batch_index, data, config):
     elif type(data) == np.ndarray:
         return data[batch_index*config.batch_size:(batch_index+1)*config.batch_size]
 
-def check_data_arr(config):
+def get_data_arr(config):
 
     is_crop = '_cropped' if config.is_crop == True else ''
     npy_path = os.path.join('./data', config.dataset+is_crop+'.npy')
 
+    is_grayscale = (config.c_dim == 1)
     if not os.path.exists(npy_path):
-        is_grayscale = (config.c_dim == 1)
         files = glob(os.path.join('./data', config.dataset, '*.jpg'))
         data = [get_image(batch_file, config.image_size, is_crop=config.is_crop, resize_w=config.output_size, is_grayscale = is_grayscale) for batch_file in files]
-
-        if (is_grayscale):
-            data = np.array(data).astype(np.float32)[:, :, :, None]
-        else:
-            data = np.array(data).astype(np.float32)
-
         np.save(npy_path, data)
 
-    return npy_path
+    data = np.load(npy_path)
+
+    if (is_grayscale):
+        data = np.array(data).astype(np.float32)[:, :, :, None]
+    else:
+        data = np.array(data).astype(np.float32)
+
+
+    return data
