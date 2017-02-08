@@ -21,8 +21,12 @@ To train:
 ```bash
 python main.py --dataset celebA --is_train --is_crop
 ```
+OR modify and use `run.py`:
+```bash
+python run.py
+```
 
-*Note:* a NumPy array of the input data is created by default. This is to avoid batch by batch IO. 
+**Note:** a NumPy array of the input data is created by default. This is to avoid batch by batch IO. 
 You can turn this option off if the available memory is too small on your system or if your dataset is too large.
 ```bash
 python main.py --dataset celebA --is_train --is_crop --preload_data False
