@@ -100,7 +100,7 @@ class DCGAN(object):
         self.increment_epoch = tf.assign(self.epoch, self.epoch+1)
 
         self.global_step = tf.Variable(0, name='global_step', trainable=False)
-        self.saver = tf.train.Saver()
+        self.saver = tf.train.Saver(max_to_keep=1000)
 
     def discriminator(self, image, y=None, reuse=False):
         with tf.variable_scope("discriminator") as scope:
