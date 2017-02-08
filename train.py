@@ -22,12 +22,14 @@ def train_wasserstein(sess, gan, data, config):
         
     start_time = time.time()
 
-    if load(sess, gan, config):
+    if gan.load(config.checkpoint_dir):
         print(" [*] Load SUCCESS")
     else:
         print(" [!] Load failed...")
 
-    for epoch in range(config.epoch):
+    sess.run(gan.increment_epoch)
+
+    for epoch in range(gan.epoch.eval(), gan.epoch.eval() + config.epoch):
 
         idx = 0
         gen_iterations = 0
@@ -70,30 +72,5 @@ def train_wasserstein(sess, gan, data, config):
                 print("[Sample] d_loss: %.8f, g_loss: %.8f" % (d_loss, g_loss)) 
 
         # save a checkpoint every epoch
-        save(sess, gan, config)
-
-def save(sess, gan, config):
-    model_name = gan.model_name + "_Wasserstein.model-epoch"
-    model_dir = "%s_%s_%s" % (config.dataset, config.batch_size, config.output_size)
-    checkpoint_dir = os.path.join(config.checkpoint_dir, model_dir)
-
-    if not os.path.exists(checkpoint_dir):
-        os.makedirs(checkpoint_dir)
-
-    gan.saver.save(sess, os.path.join(checkpoint_dir, model_name), global_step=gan.global_step)
-
-def load(sess, gan, config):
-    print(" [*] Reading checkpoints...")
-
-    model_dir = "%s_%s_%s" % (config.dataset, config.batch_size, config.output_size)
-    checkpoint_dir = os.path.join(config.checkpoint_dir, model_dir)
-
-    ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
-    if ckpt and ckpt.model_checkpoint_path:
-        ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
-        gan.saver.restore(sess, os.path.join(config.checkpoint_dir, ckpt_name))
-        print(" [*] Success to read {}".format(ckpt_name))
-        return True
-    else:
-        print(" [*] Failed to find a checkpoint")
-        return False
+        gan.save(config.checkpoint_dir, train_tag="_Wasserstein")
+        sess.run(gan.increment_epoch)

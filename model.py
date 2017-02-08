@@ -7,13 +7,14 @@ import numpy as np
 from ops import *
 
 class DCGAN(object):
-    def __init__(self, sess, batch_size=64, sample_size = 64, output_size=64,
+    def __init__(self, sess, dataset, batch_size=64, sample_size = 64, output_size=64,
                  z_dim=100, z_dist='normal', gf_dim=64, df_dim=64,
                  gfc_dim=1024, dfc_dim=1024, c_dim=3):
         """
 
         Args:
             sess: TensorFlow session
+            dataset: name of dataset
             batch_size: The size of batch. Should be specified before training.
             output_size: (optional) The resolution in pixels of the images. [64]
             z_dim: (optional) Dimension of dim for Z. [100]
@@ -24,6 +25,8 @@ class DCGAN(object):
             dfc_dim: (optional) Dimension of discrim units for fully connected layer. [1024]
             c_dim: (optional) Dimension of image color. For grayscale input, set to 1. [3]
         """
+        self.sess = sess
+        self.dataset = dataset
         self.model_name = "DCGAN"
         self.batch_size = batch_size
         self.sample_size = sample_size
@@ -93,6 +96,9 @@ class DCGAN(object):
         self.d_vars = [var for var in t_vars if 'd_' in var.name]
         self.g_vars = [var for var in t_vars if 'g_' in var.name]
 
+        self.epoch = tf.Variable(-1, name='epoch', trainable=False)
+        self.increment_epoch = tf.assign(self.epoch, self.epoch+1)
+
         self.global_step = tf.Variable(0, name='global_step', trainable=False)
         self.saver = tf.train.Saver()
 
@@ -161,3 +167,31 @@ class DCGAN(object):
             h4 = deconv2d(h3, [self.batch_size, s, s, self.c_dim], name='g_h4')
 
             return tf.nn.tanh(h4)
+
+    def save(self, checkpoint_dir, train_tag=''):
+        model_name = self.model_name + train_tag + ".model-epoch"
+        model_dir = "%s_%s_%s" % (self.dataset, self.batch_size, self.output_size)
+        checkpoint_dir = os.path.join(checkpoint_dir, model_dir)
+
+        if not os.path.exists(checkpoint_dir):
+            os.makedirs(checkpoint_dir)
+
+        self.saver.save(self.sess,
+                       os.path.join(checkpoint_dir, model_name),
+                       global_step=self.epoch)
+
+    def load(self, checkpoint_dir):
+        print(" [*] Reading checkpoints...")
+
+        model_dir = "%s_%s_%s" % (self.dataset, self.batch_size, self.output_size)
+        checkpoint_dir = os.path.join(checkpoint_dir, model_dir)
+
+        ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
+        if ckpt and ckpt.model_checkpoint_path:
+            ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
+            self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
+            print(" [*] Success to read {}".format(ckpt_name))
+            return True
+        else:
+            print(" [*] Failed to find a checkpoint")
+            return False

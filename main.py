@@ -40,6 +40,7 @@ def main(_):
 
     with tf.Session() as sess:
         dcgan = DCGAN(sess, 
+                      dataset=FLAGS.dataset,
                       batch_size=FLAGS.batch_size,
                       output_size=FLAGS.output_size,
                       c_dim=FLAGS.c_dim)
@@ -48,7 +49,7 @@ def main(_):
             data = np.load(data_path)
             train.train_wasserstein(sess, dcgan, data, FLAGS)
         else:
-            train.load(sess, dcgan, FLAGS)
+            dcgan.load(FLAGS.checkpoint_dir)
 
 
 if __name__ == '__main__':
