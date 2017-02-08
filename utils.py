@@ -83,7 +83,9 @@ def get_batch_images(batch_index, data, config):
         return data[batch_index*config.batch_size:(batch_index+1)*config.batch_size]
 
 def check_data_arr(config):
-    npy_path = os.path.join('./data', config.dataset+'.npy')
+
+    is_crop = '_cropped' if config.is_crop == True else ''
+    npy_path = os.path.join('./data', config.dataset+is_crop+'.npy')
 
     if not os.path.exists(npy_path):
         is_grayscale = (config.c_dim == 1)

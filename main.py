@@ -21,6 +21,7 @@ flags.DEFINE_boolean("is_crop", False, "True for training, False for testing [Fa
 flags.DEFINE_integer("output_size", 64, "The size of the output images to produce [64]")
 flags.DEFINE_integer("c_dim", 3, "Dimension of image color. [3]")
 flags.DEFINE_string("dataset", "celebA", "The name of dataset [celebA]")
+flags.DEFINE_boolean("preload_data", True, "Converts training dataset to a numpy array to read from disk once [True]")
 flags.DEFINE_string("checkpoint_dir", "checkpoint", "Directory name to save the checkpoints [checkpoint]")
 flags.DEFINE_string("sample_dir", "samples", "Directory name to save the image samples [samples]")
 flags.DEFINE_string("tensorboard_run", "run_0", "Tensorboard run directory name [run_0]")
@@ -36,8 +37,6 @@ def main(_):
     if not os.path.exists(FLAGS.sample_dir):
         os.makedirs(FLAGS.sample_dir)
 
-    data_path = check_data_arr(FLAGS)
-
     with tf.Session() as sess:
         dcgan = DCGAN(sess, 
                       dataset=FLAGS.dataset,
@@ -46,7 +45,11 @@ def main(_):
                       c_dim=FLAGS.c_dim)
 
         if FLAGS.is_train:
-            data = np.load(data_path)
+            if FLAGS.preload_data == True:
+                data_path = check_data_arr(FLAGS)
+                data = np.load(data_path)
+            else:
+                data = glob(os.path.join('./data', FLAGS.dataset, '*.jpg'))
             train.train_wasserstein(sess, dcgan, data, FLAGS)
         else:
             dcgan.load(FLAGS.checkpoint_dir)
