@@ -41,6 +41,10 @@ def train_wasserstein(sess, gan, data, config):
             else:
                 D_iters = config.nc
 
+            # this condition will be rarely invoked if ever
+            if (idx + D_iters) >= batch_idxs:
+                D_iters = batch_idxs - idx
+
             # Update D network
             for i in range(0, D_iters):
                 sess.run(cap_d_vars_ops)
