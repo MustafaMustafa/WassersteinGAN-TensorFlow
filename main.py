@@ -11,6 +11,7 @@ import tensorflow as tf
 
 flags = tf.app.flags
 flags.DEFINE_integer("epoch", 25, "Epoch to train [25]")
+flags.DEFINE_integer("z_dim", 100, "Dimension of Z [100]")
 flags.DEFINE_float("lrD", 0.00005, "Learning rate critic/discriminator [0.00005]")
 flags.DEFINE_float("lrG", 0.00005, "Learning rate generator [0.00005]")
 flags.DEFINE_float("clamp", 0.01, "clamp range for Critic weights [0.01]")
@@ -42,7 +43,8 @@ def main(_):
                       dataset=FLAGS.dataset,
                       batch_size=FLAGS.batch_size,
                       output_size=FLAGS.output_size,
-                      c_dim=FLAGS.c_dim)
+                      c_dim=FLAGS.c_dim,
+                      z_dim=FLAGS.z_dim)
 
         if FLAGS.is_train:
             if FLAGS.preload_data == True:
